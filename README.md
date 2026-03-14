@@ -40,7 +40,7 @@ Both tables join on `mql_id`. The `won_date` in `closed_deals` extends beyond th
 
 ## Entity Relationship Diagram
 
-![ERD]([https://github.com/user-attachments/assets/your-erd-image-here](https://github.com/user-attachments/assets/f359252e-cafc-4c12-8808-02c410150b5e))
+![ERD](https://github.com/user-attachments/assets/f359252e-cafc-4c12-8808-02c410150b5e)
 
 ---
 
