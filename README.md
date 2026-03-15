@@ -10,7 +10,7 @@
 - [E. Sales Performance](#e-sales-performance)
 - [Key Findings](#key-findings)
 
-> Dataset sourced from: [Marketing Funnel by Olist — Kaggle](https://www.kaggle.com/datasets/olistbr/marketing-funnel-olist)
+> Dataset sourced from: [Marketing Funnel by Olist on Kaggle](https://www.kaggle.com/datasets/olistbr/marketing-funnel-olist)
 
 ---
 
@@ -90,10 +90,10 @@ FROM olist_marketing.closed_deals;
 ```
 
 **Key cleaning decisions:**
-- `origin` had 60 actual NULLs (confirmed via Excel, no empty strings) — replaced with `'unknown'`
-- `lead_behaviour_profile` had 177 NULLs — replaced with `'unknown'`
-- `business_segment` had a `'jewerly'` typo — corrected to `'jewelry'` using `REPLACE` nested inside `COALESCE` so both the null and the typo are handled in one expression
-- `declared_monthly_revenue` was clean, 94.5% of values are 0 (new sellers with no prior revenue), two extreme outliers (8M and 50M BRL) flagged but retained
+- `origin` had 60 actual NULLs (confirmed via Excel, no empty strings), replaced with `'unknown'`
+- `lead_behaviour_profile` had 177 NULLs, replaced with `'unknown'`
+- `business_segment` had a `'jewerly'` typo, corrected to `'jewelry'` using `REPLACE` nested inside `COALESCE` so both the null and the typo are handled in one expression
+- `declared_monthly_revenue` was clean. 94.5% of values are 0 (new sellers with no prior revenue), two extreme outliers (8M and 50M BRL) flagged but retained
 
 **Date integrity check:**
 
@@ -105,7 +105,7 @@ JOIN cleaned_marketing_qualified_leads AS mql
 WHERE cd.won_date < mql.first_contact_date::TIMESTAMP;
 ```
 
-Found 1 record where `won_date` is 2 days before `first_contact_date` — likely a data entry error. Retained in the dataset but excluded from all time-to-close calculations.
+Found 1 record where `won_date` is 2 days before `first_contact_date`, likely a data entry error. Retained in the dataset but excluded from all time-to-close calculations.
 
 ---
 
@@ -128,7 +128,7 @@ SELECT
 ```
 
 **Approach:**
-- No join needed here — just two independent counts from two separate tables
+- No join needed here, just two independent counts from two separate tables
 - `* 100.0` forces decimal division, avoids integer rounding to 0
 
 **Result:**
@@ -136,7 +136,7 @@ SELECT
 |---|---|---|
 | 8000 | 842 | 10.53% |
 
-- Only 1 in ~10 leads becomes a seller. This is the headline metric for the entire project.
+- Out of 8,000 leads, 842 became sellers. That is a 10.53% conversion rate.
 
 ---
 
@@ -153,7 +153,7 @@ ORDER BY DATE_TRUNC('month', first_contact_date);
 
 **Approach:**
 - `DATE_TRUNC` is used in `GROUP BY` and `ORDER BY` for correct chronological sorting
-- `TO_CHAR` is used only in `SELECT` for readable display — if you group by the text version you lose date ordering
+- `TO_CHAR` is used only in `SELECT` for readable display. Grouping by the text version loses date ordering
 
 **Result:**
 | lead_month | lead_count |
@@ -172,7 +172,7 @@ ORDER BY DATE_TRUNC('month', first_contact_date);
 | May 2018 | 1303 |
 
 - June 2017 only has 4 leads because the dataset capture window starts June 1st
-- There is a sharp jump from Dec 2017 (200) to Jan 2018 (1141) — nearly 6x increase, suggesting a significant marketing push at the start of 2018
+- There is a sharp jump from Dec 2017 (200) to Jan 2018 (1141), nearly 6x, suggesting a significant marketing push at the start of 2018
 
 ---
 
@@ -203,12 +203,12 @@ ORDER BY DATE_TRUNC('month', won_date);
 | Oct 2018 | 21 |
 | Nov 2018 | 6 |
 
-- Closings extend to November 2018 even though MQL capture ends June 2018 — confirms the funnel lag where leads take weeks or months to close
-- Peak closings in April 2018 (207), followed by a sharp decline — likely reflecting the earlier lead surge in Jan-Mar 2018 working through the pipeline
+- Closings extend to November 2018 even though MQL capture ends June 2018, confirming the funnel lag where leads take weeks or months to close
+- Peak closings in April 2018 (207), followed by a sharp decline, likely reflecting the earlier lead surge in Jan-Mar 2018 working through the pipeline
 
 ---
 
-### C4. Conversion rate over time — same-month vs cohort
+### C4. Conversion rate over time: same-month vs cohort
 
 Two approaches are shown here because they answer different questions. Same-month compares leads and deals in the same calendar month. Cohort tracks each month's leads to eventual close regardless of when that close happened.
 
@@ -250,9 +250,9 @@ ORDER BY ml.lead_month;
 ```
 
 **Approach:**
-- Three CTEs are chained — `monthly_leads` and `monthly_deals` for same-month, `cohort` for the cohort rate
+- Three CTEs are chained: `monthly_leads` and `monthly_deals` for same-month, `cohort` for the cohort rate
 - `COALESCE(md.won_count, 0)` handles months where no deals closed that same month
-- The cohort CTE joins on `mql_id` not on matching months — this is the key difference that makes it cohort-based
+- The cohort CTE joins on `mql_id` not on matching months. This is the key difference that makes it cohort-based
 
 **Result:**
 | month | total_leads | same_month_closed | same_month_pct | cohort_closed | cohort_pct |
@@ -270,15 +270,15 @@ ORDER BY ml.lead_month;
 | Apr 2018 | 1352 | 207 | 15.31% | 183 | 13.54% |
 | May 2018 | 1303 | 122 | 9.36% | 130 | 9.98% |
 
-- Early cohorts (Jul-Nov 2017) look like 0% same-month but cohort reveals they did convert — just slowly, with longer sales cycles in the early funnel stage
-- Feb and Mar 2018 have the strongest cohort conversion at 14%+ — those leads converted at a high rate eventually
-- Apr 2018 leads same-month (15.31%) but ranks 3rd in cohort — some of those leads had not yet closed by the time the dataset ends
+- Early cohorts (Jul-Nov 2017) look like 0% same-month but cohort reveals they did convert, just slowly, with longer sales cycles in the early funnel stage
+- Feb and Mar 2018 have the strongest cohort conversion at 14%+, those leads converted at a high rate eventually
+- Apr 2018 leads same-month (15.31%) but ranks 3rd in cohort, some of those leads had not yet closed by the time the dataset ends
 
 ---
 
 ## D. Lead Source Analysis
 
-> This section answers: which channels bring the most leads, and which bring the best quality leads? Note that `business_segment`, `lead_type`, and `lead_behaviour_profile` only exist in `closed_deals`, not in MQL. This means true conversion rates cannot be calculated for those dimensions — only distribution among converted sellers.
+> This section answers: which channels bring the most leads, and which bring the best quality leads? Note that `business_segment`, `lead_type`, and `lead_behaviour_profile` only exist in `closed_deals`, not in MQL. True conversion rates cannot be calculated for those dimensions, only distribution among converted sellers.
 
 ---
 
@@ -308,7 +308,7 @@ ORDER BY total_leads DESC;
 | other_publicities | 65 |
 
 - Organic search is the dominant channel at 28.7% of all leads
-- Unknown source accounts for 14.5% — a significant attribution gap that makes channel analysis incomplete
+- Unknown source accounts for 14.5%, a significant attribution gap that makes channel analysis incomplete
 
 ---
 
@@ -329,7 +329,7 @@ ORDER BY conversion_rate_pct DESC;
 **Approach:**
 - `COUNT(cd.mql_id)` counts only rows where a match exists in `closed_deals` (converted leads)
 - `COUNT(mql.mql_id)` counts all leads regardless of conversion
-- The `LEFT JOIN` is essential — an `INNER JOIN` would drop unconverted leads and make every origin show 100%
+- The `LEFT JOIN` is essential. An `INNER JOIN` would drop unconverted leads and make every origin show 100%
 
 **Result:**
 | origin | total_leads | converted | conversion_rate_pct |
@@ -345,9 +345,9 @@ ORDER BY conversion_rate_pct DESC;
 | email | 493 | 15 | 3.04% |
 | other | 150 | 4 | 2.67% |
 
-- Unknown origin converts best at 16.65% — the highest quality leads have no source attribution, which is a tracking problem worth fixing
+- Unknown origin converts best at 16.65%, the highest quality leads have no source attribution, which is a tracking problem worth fixing
 - Paid search (12.30%) outperforms organic (11.80%) in quality despite lower volume
-- Email converts poorly at 3.04% despite being the 5th largest channel by volume
+- Email converts at only 3.04% despite being the 5th largest channel by volume
 - Social brings high volume (3rd) but below-average conversion (5.56%)
 
 ---
@@ -378,7 +378,7 @@ ORDER BY total_closed DESC;
 | food_supplement | 28 | 3.33% |
 | food_drink | 26 | 3.09% |
 
-- The top 6 segments account for ~57% of all closed deals — acquisition is heavily concentrated in home and lifestyle categories
+- The top 6 segments account for ~57% of all closed deals, acquisition is heavily concentrated in home and lifestyle categories
 - Home decor alone represents 1 in 8 closed deals
 
 ---
@@ -407,8 +407,8 @@ ORDER BY total_closed DESC;
 | online_top | 14 | 1.66% |
 
 - Online sellers across all sizes account for ~72% of closed deals
-- Online medium is the core target at 39.43% — nearly 4 in 10 closed deals
-- The largest online sellers (online_top) are the rarest at 1.66% — likely harder to acquire or less interested in the platform
+- Online medium is the core target at 39.43%, nearly 4 in 10 closed deals
+- The largest online sellers (online_top) are the rarest at 1.66%, likely harder to acquire or less interested in the platform
 
 ---
 
@@ -436,8 +436,8 @@ ORDER BY total_closed DESC;
 
 - Cat profile dominates at 48% of all closed deals
 - Shark profile is the rarest at 2.85% among converted sellers
-- 21% unknown profile — the tracking gap here limits the reliability of this analysis
-- Note: profile labels are defined by Olist's internal sales methodology. The dataset documentation does not provide explicit definitions for each profile — interpretation based on animal characteristics would be speculative
+- 21% unknown profile, the tracking gap here limits the reliability of this analysis
+- Note: profile labels are defined by Olist's internal sales methodology. The dataset documentation does not provide explicit definitions for each profile, so interpretation based on animal characteristics would be speculative
 
 ---
 
@@ -468,7 +468,7 @@ LEFT JOIN cleaned_marketing_qualified_leads AS mql
 WHERE cd.won_date >= mql.first_contact_date::TIMESTAMP;
 ```
 
-Returns 841 rows — 842 closed deals minus the 1 excluded impossible date record.
+Returns 841 rows, 842 closed deals minus the 1 excluded impossible date record.
 
 ---
 
@@ -558,9 +558,9 @@ Cross-referencing with D2 conversion rates:
 | organic_search | 11.80% | 50.19 days |
 | social | 5.56% | 60.96 days |
 
-- Direct traffic has the best overall channel quality — good conversion AND fast close
+- Direct traffic has good conversion (11.22%) AND closes fast (31 days), best overall channel quality
 - Paid search converts well but takes nearly 2x longer than direct traffic to close
-- Social has the worst combination — low conversion and slowest close time
+- Social has the worst combination, low conversion and slowest close time
 
 ---
 
@@ -593,9 +593,9 @@ LIMIT 10;
 | f42a2b...| 42 | 78.33 |
 | 09285...| 42 | 36.67 |
 
-- Top SDR closed 140 deals — 73% more than 2nd place (81)
-- SDR 9e4d has best efficiency — 55 deals at only 18.29 avg days
-- SDR f42a has the slowest close time at 78.33 days despite 42 deals — worth investigating
+- Top SDR closed 140 deals, 73% more than 2nd place (81)
+- SDR 9e4d has best efficiency with 55 deals at only 18.29 avg days
+- SDR f42a has the slowest close time at 78.33 days despite 42 deals, worth investigating
 - All IDs anonymized per Olist data privacy policy
 
 ---
@@ -629,35 +629,22 @@ LIMIT 10;
 | 9ae085...| 51 | 41.71 |
 | c63811...| 36 | 22.39 |
 
-- Top SR closed 133 deals — 62% more than 2nd place (82)
-- SR fbf4 has best efficiency — 59 deals at 21.97 avg days
-- SR de63 appears in both SDR and SR top 10 — same person filling dual roles
+- Top SR closed 133 deals, 62% more than 2nd place (82)
+- SR fbf4 has best efficiency with 59 deals at 21.97 avg days
+- SR de63 appears in both SDR and SR top 10, same person filling dual roles
 - All IDs anonymized per Olist data privacy policy
 
 ---
 
 ## Key Findings
 
-**Funnel Health**
-- Overall conversion rate is 10.53% — roughly 1 in 10 leads becomes a seller
-- Lead volume grew sharply in early 2018 — Jan-May 2018 accounts for 75% of all MQLs
-- Feb and Mar 2018 cohorts show the strongest eventual conversion at 14%+
+The funnel converts at 10.53% overall, meaning roughly 1 in 10 leads becomes a seller on Olist. Most of the lead volume arrived in early 2018, with April being the peak month at 1,352 MQLs. When you look at cohort data though, the Feb and Mar 2018 leads actually converted better in the long run at 14%+, while April's strong same-month number is partly because some of those leads hadn't closed yet by the time the dataset ends.
 
-**Best Channels**
-- Direct traffic offers the best overall value — good conversion (11.22%) and fastest close time (31 days) among reliable volume channels
-- Paid search converts well (12.30%) but takes nearly twice as long to close as direct traffic
-- Social brings volume but underperforms on both conversion (5.56%) and speed (61 days)
-- 14.5% of leads have unknown origin — fixing attribution tracking is a priority
+On channels, the most interesting finding is that direct traffic quietly outperforms everything else. It converts at 11.22% and closes in 31 days on average. Paid search converts slightly better at 12.30% but takes nearly twice as long to close. Social brings a lot of leads but underperforms badly on both metrics. And then there is the unknown origin group sitting at 16.65% conversion with no attribution at all, which means the best-performing channel cannot even be identified. Fixing that tracking gap would be the first thing worth addressing.
 
-**Seller Profiles**
-- Home decor, health & beauty, and car accessories dominate acquisition (~33% combined)
-- Online medium sellers are the core target at 39% of closed deals
-- Cat behaviour profile accounts for nearly half of all converted sellers
+For seller profiles, home decor, health & beauty, and car accessories dominate, making up about a third of all closed deals between them. Online medium-sized sellers are the typical acquisition target at 39% of closed deals. The cat behaviour profile accounts for nearly half of all converted sellers, though the dataset does not define what that profile actually means in practice.
 
-**Sales Team**
-- Average deal takes 48.5 days to close from first contact
-- Top SDR closed 73% more deals than 2nd place — significant concentration of performance
-- SR de63 works both SDR and SR roles and appears in both top 10 lists
+The sales team closes deals in 48.5 days on average. The top SDR closed 140 deals, which is 73% more than the second-ranked SDR, and one person (SR de63) appears in both the SDR and SR top 10 lists, suggesting they are handling dual responsibilities. SDR f42a's 78-day average close time stands out against peers and is worth a closer look.
 
 ---
 
