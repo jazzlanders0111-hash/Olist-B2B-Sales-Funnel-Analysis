@@ -46,8 +46,7 @@ CREATE TABLE IF NOT EXISTS closed_deals (
 -- DATA LOADING
 -- TRUNCATE empties tables first so no duplicates
 -- so that when we COPY it reloads fresh data every run
--- place the datasets in C:/pgdata/ or whatever you like
--- and update paths if needed
+-- place the datasets in C:/pgdata/ and update paths if needed
 -- =====================================================
 
 TRUNCATE TABLE olist_marketing.marketing_qualified_leads;
