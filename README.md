@@ -27,6 +27,14 @@ This project analyzes 8,000 MQLs captured between June 2017 and June 2018 to ans
 
 ---
 
+## Dashboard
+
+[View Interactive Dashboard on Tableau Public](https://public.tableau.com/app/profile/rich.justine.gambe/viz/OlistB2BSalesFunnel/Dashboard1)
+
+![Dashboard Preview](olist_b2b_sales_funnel_db.png)
+
+--- 
+
 ## Dataset Overview
 
 | Table | Rows | Description |
