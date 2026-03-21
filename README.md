@@ -25,8 +25,6 @@ Olist is the largest department store in Brazilian marketplaces. Small businesse
 
 This project analyzes 8,000 MQLs captured between June 2017 and June 2018 to answer: which channels bring the best leads, which seller profiles convert most, and how efficiently does the sales team close deals.
 
----
-
 ## Dashboard
 
 [View Interactive Dashboard on Tableau Public](https://public.tableau.com/app/profile/rich.justine.gambe/viz/OlistB2BSalesFunnel/Dashboard1)
